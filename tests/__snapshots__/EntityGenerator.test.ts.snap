@@ -162,6 +162,23 @@ export class BookToTagUnordered {
 
 }
 ",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
+import { Test2 } from './Test2';
+
+@Entity()
+export class Configuration2 {
+
+  @PrimaryKey({ length: 255 })
+  property!: string;
+
+  @ManyToOne({ entity: () => Test2, primary: true })
+  test!: Test2;
+
+  @Property({ length: 255 })
+  value!: string;
+
+}
+",
   "import { Entity, OneToOne, PrimaryKey, Property } from 'mikro-orm';
 import { FooBaz2 } from './FooBaz2';
 
@@ -198,6 +215,24 @@ export class FooBaz2 {
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
   version!: Date;
+
+}
+",
+  "import { Entity, ManyToOne, Property } from 'mikro-orm';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
+
+@Entity()
+export class FooParam2 {
+
+  @ManyToOne({ entity: () => FooBar2, primary: true })
+  bar!: FooBar2;
+
+  @ManyToOne({ entity: () => FooBaz2, primary: true })
+  baz!: FooBaz2;
+
+  @Property({ length: 255 })
+  value!: string;
 
 }
 ",
@@ -442,6 +477,23 @@ export class BookToTagUnordered {
 
 }
 ",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from 'mikro-orm';
+import { Test2 } from './Test2';
+
+@Entity()
+export class Configuration2 {
+
+  @PrimaryKey({ length: 255 })
+  property!: string;
+
+  @ManyToOne({ entity: () => Test2, primary: true })
+  test!: Test2;
+
+  @Property({ length: 255 })
+  value!: string;
+
+}
+",
   "import { Entity, OneToOne, PrimaryKey, Property } from 'mikro-orm';
 import { FooBaz2 } from './FooBaz2';
 
@@ -478,6 +530,24 @@ export class FooBaz2 {
 
   @Property({ length: 3, default: \`current_timestamp(3)\` })
   version!: Date;
+
+}
+",
+  "import { Entity, ManyToOne, Property } from 'mikro-orm';
+import { FooBar2 } from './FooBar2';
+import { FooBaz2 } from './FooBaz2';
+
+@Entity()
+export class FooParam2 {
+
+  @ManyToOne({ entity: () => FooBar2, primary: true })
+  bar!: FooBar2;
+
+  @ManyToOne({ entity: () => FooBaz2, primary: true })
+  baz!: FooBaz2;
+
+  @Property({ length: 255 })
+  value!: string;
 
 }
 ",

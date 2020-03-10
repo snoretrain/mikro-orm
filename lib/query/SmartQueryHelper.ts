@@ -73,7 +73,7 @@ export class SmartQueryHelper {
   }
 
   private static processEntity(entity: AnyEntity, root?: boolean): any {
-    if (root) {
+    if (root || entity.__meta.compositePK) {
       return entity.__primaryKey;
     }
 

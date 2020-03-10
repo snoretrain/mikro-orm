@@ -8,6 +8,8 @@ drop table if exists "publisher2" cascade;
 drop table if exists "test2" cascade;
 drop table if exists "foo_bar2" cascade;
 drop table if exists "foo_baz2" cascade;
+drop table if exists "foo_param2" cascade;
+drop table if exists "configuration2" cascade;
 drop table if exists "author_to_friend" cascade;
 drop table if exists "author2_to_author2" cascade;
 drop table if exists "book2_to_book_tag2" cascade;
@@ -38,6 +40,12 @@ alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_
 
 create table "foo_baz2" ("id" serial primary key, "name" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));
 
+create table "foo_param2" ("bar_id" int4 not null, "baz_id" int4 not null, "value" varchar(255) not null);
+alter table "foo_param2" add constraint "foo_param2_pkey" primary key ("bar_id", "baz_id");
+
+create table "configuration2" ("property" varchar(255) not null, "test_id" int4 not null, "value" varchar(255) not null);
+alter table "configuration2" add constraint "configuration2_pkey" primary key ("property", "test_id");
+
 create table "author_to_friend" ("author2_1_id" int4 not null, "author2_2_id" int4 not null);
 alter table "author_to_friend" add constraint "author_to_friend_pkey" primary key ("author2_1_id", "author2_2_id");
 
@@ -60,6 +68,11 @@ alter table "test2" add constraint "test2_book_uuid_pk_foreign" foreign key ("bo
 
 alter table "foo_bar2" add constraint "foo_bar2_baz_id_foreign" foreign key ("baz_id") references "foo_baz2" ("id") on update cascade on delete set null;
 alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_foreign" foreign key ("foo_bar_id") references "foo_bar2" ("id") on update cascade on delete set null;
+
+alter table "foo_param2" add constraint "foo_param2_bar_id_foreign" foreign key ("bar_id") references "foo_bar2" ("id") on update cascade;
+alter table "foo_param2" add constraint "foo_param2_baz_id_foreign" foreign key ("baz_id") references "foo_baz2" ("id") on update cascade;
+
+alter table "configuration2" add constraint "configuration2_test_id_foreign" foreign key ("test_id") references "test2" ("id") on update cascade;
 
 alter table "author_to_friend" add constraint "author_to_friend_author2_1_id_foreign" foreign key ("author2_1_id") references "author2" ("id") on update cascade on delete cascade;
 alter table "author_to_friend" add constraint "author_to_friend_author2_2_id_foreign" foreign key ("author2_2_id") references "author2" ("id") on update cascade on delete cascade;

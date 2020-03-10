@@ -2,11 +2,22 @@ import { v4 } from 'uuid';
 import chalk from 'chalk';
 
 import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryOrder, Reference, Utils, wrap } from '../lib';
-import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
+import {
+  Author2,
+  Book2,
+  BookTag2,
+  Configuration2,
+  FooBar2,
+  FooBaz2,
+  Publisher2,
+  PublisherType,
+  Test2,
+} from './entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { MySqlDriver } from '../lib/drivers/MySqlDriver';
 import { Logger, ValidationError } from '../lib/utils';
 import { MySqlConnection } from '../lib/connections/MySqlConnection';
+import { FooParam2 } from './entities-sql/FooParam2';
 
 describe('EntityManagerMySql', () => {
 
@@ -793,7 +804,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.persistAndFlush(test);
     orm.em.clear();
 
-    const b1 = (await orm.em.findOne(Book2, { test: test.id }, ['test']))!;
+    const b1 = (await orm.em.findOne(Book2, { test: test.id }, ['test.config']))!;
     expect(b1.uuid).not.toBeNull();
     expect(wrap(b1).toJSON()).toMatchObject({ test: wrap(test).toJSON() });
   });
@@ -1776,6 +1787,50 @@ describe('EntityManagerMySql', () => {
 
     // fails with 2 b/c the post is in the collection twice
     expect(author2.books.length).toEqual(2);
+  });
+
+  test('composite keys 1', async () => {
+    const test = Test2.create('t');
+    test.config.add(new Configuration2(test, 'foo', '1'));
+    test.config.add(new Configuration2(test, 'bar', '2'));
+    test.config.add(new Configuration2(test, 'baz', '3'));
+    await orm.em.persistAndFlush(test);
+    orm.em.clear();
+
+    const t = await orm.em.findOneOrFail(Test2, test.id, ['config']);
+    expect(t.getConfiguration()).toEqual({
+      foo: '1',
+      bar: '2',
+      baz: '3',
+    });
+  });
+
+  test('composite keys 2', async () => {
+    const bar = FooBar2.create('bar');
+    bar.id = 7;
+    const baz = new FooBaz2('baz');
+    baz.id = 3;
+    const param = new FooParam2(bar, baz, 'val');
+    await orm.em.persistAndFlush(param);
+    orm.em.clear();
+
+    const p1 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    expect(p1.bar.id).toBe(bar.id);
+    expect(p1.baz.id).toBe(baz.id);
+    expect(p1.value).toBe('val');
+
+    p1.value = 'val2';
+    await orm.em.flush();
+    orm.em.clear();
+
+    const p2 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    expect(p2.bar.id).toBe(bar.id);
+    expect(p2.baz.id).toBe(baz.id);
+    expect(p2.value).toBe('val2');
+    expect(Object.keys(orm.em.getUnitOfWork().getIdentityMap()).sort()).toEqual(['FooBar2-7', 'FooBaz2-3', 'FooParam2-7~3']);
+
+    const p3 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    expect(p3).toBe(p2);
   });
 
   afterAll(async () => orm.close(true));
